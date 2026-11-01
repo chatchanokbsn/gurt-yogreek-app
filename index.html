@@ -115,7 +115,15 @@
         // ตั้งค่า Supabase ของคุณ
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
         const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // ใส่รหัส anon public ของคุณที่นี่
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let supabase = null;
+        try {
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch (e) {
+            console.error("Supabase Init Error:", e);
+        }
 
         const CATALOG = [
             { id: "c1", name: "Greek Original", rarity: "Common", desc: "เนื้อโยเกิร์ตเข้มข้นสูตรต้นตำรับ ละมุนลิ้น ทานเพลิน", icon: "🥣" },
@@ -129,13 +137,16 @@
         function switchTab(tab) {
             const isC = tab === 'customer';
             document.getElementById('tab-customer').classList.toggle('hidden', !isC);
-            document.getElementById('tab-staff').classList.toggle('hidden', isC);
+            document.getElementById('tab-staff').classList.toggle('hidden', !isC);
             document.getElementById('btn-customer').className = isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
             document.getElementById('btn-staff').className = !isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
         }
 
-        // ฟังก์ชันดึงข้อมูลการ์ดของลูกค้า (มีระบบดักจับ Error และสร้างบัญชีอัตโนมัติ)
         async function loadAlbum() {
+            if (!supabase) {
+                alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
+                return;
+            }
             const uid = document.getElementById('cust-uid').value.trim();
             if(!uid) { alert('กรุณากรอก UID หรือเบอร์โทรศัพท์'); return; }
 
@@ -150,4 +161,122 @@
 
                 let cards = data ? data.cards || [] : [];
 
-                if(!data)
+                if(!data) {
+                    let { error: insertError } = await supabase.from('members').insert([{ line_uid: uid, cards: [] }]);
+                    if (insertError) {
+                        console.error("Supabase Insert Error:", insertError);
+                        alert('❌ เกิดข้อผิดพลาดในการสร้างบัญชี: ' + insertError.message);
+                        return;
+                    }
+                }
+
+                document.getElementById('customer-content').classList.remove('hidden');
+                document.getElementById('disp-uid').innerText = uid;
+                renderGrid(cards);
+
+            } catch (err) {
+                console.error("Unexpected Error:", err);
+                alert('❌ เกิดข้อผิดพลาดที่ไม่คาดคิด: ' + err.message);
+            }
+        }
+
+        function renderGrid(userCards) {
+            const grid = document.getElementById('album-grid');
+            grid.innerHTML = '';
+            let count = 0;
+
+            CATALOG.forEach(card => {
+                const owned = userCards.includes(card.id);
+                if(owned) count++;
+
+                let glowClass = '';
+                if(owned && card.rarity === 'Epic') glowClass = 'card-glow-epic bg-purple-50/40';
+                else if(owned && card.rarity === 'Rare') glowClass = 'card-glow-rare bg-blue-50/40';
+                else if(owned) glowClass = 'bg-white border-pink-200 shadow-sm';
+                else glowClass = 'bg-slate-50 border-slate-200 opacity-40 grayscale';
+
+                const el = document.createElement('div');
+                el.className = `p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between ${glowClass}`;
+                el.onclick = () => openModal(card, owned);
+                el.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-2xl">${card.icon}</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full border font-semibold">${card.rarity}</span>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-800">${card.name}</h4>
+                    </div>
+                    <div class="mt-2 pt-1 border-t border-slate-100 text-[10px] font-medium ${owned ? 'text-pink-600' : 'text-slate-400'}">
+                        ${owned ? '✓ สะสมแล้ว' : '🔒 ล็อกอยู่'}
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
+
+            document.getElementById('disp-count').innerText = count;
+            document.getElementById('disp-total').innerText = CATALOG.length;
+            const percent = (count / CATALOG.length) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            const btnClaim = document.getElementById('btn-claim');
+            if(count >= CATALOG.length) {
+                btnClaim.disabled = false;
+                btnClaim.className = 'bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-pink-700 shadow-md cursor-pointer transition';
+            }
+        }
+
+        function openModal(card, owned) {
+            document.getElementById('modal-icon').innerText = card.icon;
+            document.getElementById('modal-name').innerText = card.name;
+            document.getElementById('modal-desc').innerText = owned ? card.desc : '🔒 คุณยังไม่ได้รับสติกเกอร์/การ์ดใบนี้ สั่งซื้อเมนูพิเศษหน้าร้านเพื่อสุ่มรับเลย!';
+            document.getElementById('modal-rarity').innerText = card.rarity;
+            document.getElementById('card-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('card-modal').classList.add('hidden');
+        }
+
+        async function staffDrawCard() {
+            if (!supabase) {
+                alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
+                return;
+            }
+            const uid = document.getElementById('staff-uid').value.trim();
+            if(!uid) { alert('กรุณากรอก UID ลูกค้า'); return; }
+
+            const rand = Math.random() * 100;
+            let rarity = 'Common';
+            if(rand > 95) rarity = 'Epic';
+            else if(rand > 70) rarity = 'Rare';
+
+            const filtered = CATALOG.filter(c => c.rarity === rarity);
+            const card = filtered[Math.floor(Math.random() * filtered.length)];
+
+            let { data } = await supabase.from('members').select('*').eq('line_uid', uid).maybeSingle();
+            let cards = data ? data.cards || [] : [];
+            if(!cards.includes(card.id)) cards.push(card.id);
+
+            await supabase.from('members').upsert({ line_uid: uid, cards: cards, updated_at: new Date() });
+
+            document.getElementById('staff-result').classList.remove('hidden');
+            document.getElementById('res-icon').innerText = card.icon;
+            document.getElementById('res-name').innerText = card.name;
+            document.getElementById('res-desc').innerText = card.desc;
+            alert(`แจกการ์ด "${card.name}" (${card.rarity}) สำเร็จ!`);
+        }
+
+        function claimReward() {
+            alert('ยินดีด้วยครับ! แสดงหน้าจอนี้ให้พนักงานหน้าร้านเพื่อรับกรีกโยเกิร์ตฟรี 1 ถ้วยได้เลยครับ');
+        }
+
+        // ผูกฟังก์ชันเข้ากับ window เพื่อป้องกันปัญหา Scope
+        window.switchTab = switchTab;
+        window.loadAlbum = loadAlbum;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.staffDrawCard = staffDrawCard;
+        window.claimReward = claimReward;
+    </script>
+</body>
+</html>
