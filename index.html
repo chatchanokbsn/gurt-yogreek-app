@@ -1,72 +1,138 @@
-// 1. นำเข้าและเชื่อมต่อ Supabase Client
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurt Yogreek - ระบบสุ่มการ์ดพนักงาน</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #f9f9f9; color: #333; }
+        .card-box { background: white; padding: 25px; border-radius: 12px; max-width: 450px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin: 0 auto; }
+        h2 { color: #2c3e50; margin-top: 0; }
+        input { padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        button { padding: 12px 15px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        button:hover { background: #218838; }
+        #resultMessage { margin-top: 15px; font-weight: bold; font-size: 15px; }
+        .card-list { margin-top: 15px; padding: 12px; background: #f1f1f1; border-radius: 6px; font-size: 14px; }
+    </style>
+    <!-- โหลด Supabase SDK แบบมาตรฐาน -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
-const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co/rest/v1/';      // คัดลอกมาจาก Project Settings > API
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw';  // คัดลอกมาจาก Project Settings > API
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    <div class="card-box">
+        <h2>Gurt Yogreek Staff Portal</h2>
+        <p>ระบบแจกการ์ดสะสมให้สมาชิก</p>
+        
+        <input type="text" id="memberIdInput" placeholder="กรอกรหัสสมาชิก หรือ LINE UID เช่น user_01">
+        <button id="awardBtn">กดเพื่อสุ่มแจกการ์ด (card_001)</button>
+        
+        <p id="resultMessage"></p>
+        <div class="card-list" id="cardListDisplay" style="display:none;">
+            <strong>การ์ดทั้งหมดที่สมาชิกคนนี้มี:</strong> <span id="cardsText">-</span>
+        </div>
+    </div>
 
-// 2. ฟังก์ชันตรวจสอบข้อมูลสมาชิก หรือสร้างสมาชิกใหม่หากยังไม่เคยมีในระบบ
-async function getOrCreateMember(memberId) {
-    // ค้นหาข้อมูลสมาชิกจาก member_id
-    let { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('member_id', memberId)
-        .maybeSingle();
+    <script>
+        // 1. ตั้งค่าการเชื่อมต่อ (เปลี่ยนชื่อตัวแปรเป็น supabaseClient ป้องกันการชนกัน)
+        const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw'; 
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    if (error) {
-        console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error.message);
-        return null;
-    }
+        // 2. ฟังก์ชันตรวจสอบข้อมูลสมาชิก หรือสร้างใหม่ถ้ายังไม่มี
+        async function getOrCreateMember(memberId) {
+            let { data, error } = await supabaseClient
+                .from('members')
+                .select('*')
+                .eq('member_id', memberId)
+                .maybeSingle();
 
-    if (data) {
-        return data; // หากมีข้อมูลแล้ว คืนค่าข้อมูลเดิม
-    } else {
-        // หากยังไม่เคยมี ให้สร้างโปรไฟล์สมาชิกใหม่พร้อม Array การ์ดว่างๆ
-        let { data: newMember, error: insertError } = await supabase
-            .from('members')
-            .insert([{ member_id: memberId, cards: [] }])
-            .select()
-            .single();
+            if (error) {
+                throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message);
+            }
 
-        if (insertError) {
-            console.error('เกิดข้อผิดพลาดในการสร้างสมาชิกใหม่:', insertError.message);
-            return null;
+            if (data) {
+                return data; 
+            } else {
+                let { data: newMember, error: insertError } = await supabaseClient
+                    .from('members')
+                    .insert([{ member_id: memberId, cards: [] }])
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    throw new Error('เกิดข้อผิดพลาดในการสร้างสมาชิกใหม่: ' + insertError.message);
+                }
+                return newMember;
+            }
         }
-        return newMember;
-    }
-}
 
-// 3. ฟังก์ชันบันทึกการ์ดที่สุ่มได้ให้กับสมาชิก (Staff Action)
-async function awardCardToMember(memberId, cardId) {
-    // ดึงข้อมูลล่าสุดของสมาชิก
-    const member = await getOrCreateMember(memberId);
-    if (!member) return;
+        // 3. ฟังก์ชันบันทึกการ์ดให้สมาชิก
+        async function awardCardToMember(memberId, cardId) {
+            const member = await getOrCreateMember(memberId);
+            if (!member) return null;
 
-    let currentCards = member.cards || [];
+            let currentCards = member.cards || [];
 
-    // ตรวจสอบว่าลูกค้ามีการ์ดใบนี้แล้วหรือยัง เพื่อไม่ให้บันทึกซ้ำซ้อน
-    if (!currentCards.includes(cardId)) {
-        currentCards.push(cardId);
+            if (!currentCards.includes(cardId)) {
+                currentCards.push(cardId);
 
-        // อัปเดตข้อมูลการ์ดและเวลาลงใน Supabase
-        const { error } = await supabase
-            .from('members')
-            .update({ 
-                cards: currentCards, 
-                updated_at: new Date() 
-            })
-            .eq('member_id', memberId);
+                const { error } = await supabaseClient
+                    .from('members')
+                    .update({ 
+                        cards: currentCards, 
+                        updated_at: new Date() 
+                    })
+                    .eq('member_id', memberId);
 
-        if (error) {
-            console.error('ไม่สามารถบันทึกการ์ดได้:', error.message);
-            return false;
-        } else {
-            console.log(`มอบการ์ด ${cardId} ให้สมาชิก ${memberId} สำเร็จ!`);
-            return true;
+                if (error) {
+                    throw new Error('ไม่สามารถบันทึกการ์ดได้: ' + error.message);
+                } else {
+                    return { success: true, cards: currentCards };
+                }
+            } else {
+                return { success: 'already_owned', cards: currentCards };
+            }
         }
-    } else {
-        console.log('สมาชิกรายนี้มี 카드 ใบนี้อยู่แล้ว');
-        return 'already_owned';
-    }
-}
+
+        // 4. ดักจับการคลิกปุ่มพนักงาน
+        document.getElementById('awardBtn').addEventListener('click', async () => {
+            const memberId = document.getElementById('memberIdInput').value.trim();
+            const resultMsg = document.getElementById('resultMessage');
+            const cardListDisplay = document.getElementById('cardListDisplay');
+            const cardsText = document.getElementById('cardsText');
+
+            if (!memberId) {
+                resultMsg.style.color = 'red';
+                resultMsg.innerText = '⚠️ กรุณากรอกรหัสสมาชิกก่อน!';
+                cardListDisplay.style.display = 'none';
+                return;
+            }
+
+            resultMsg.style.color = 'blue';
+            resultMsg.innerText = '⏳ กำลังบันทึกข้อมูลลง Supabase...';
+            cardListDisplay.style.display = 'none';
+
+            try {
+                const result = await awardCardToMember(memberId, 'card_001');
+
+                if (result && result.success === true) {
+                    resultMsg.style.color = 'green';
+                    resultMsg.innerText = '✅ มอบการ์ด card_001 ให้สมาชิกสำเร็จ!';
+                    cardsText.innerText = result.cards.join(', ');
+                    cardListDisplay.style.display = 'block';
+                } else if (result && result.success === 'already_owned') {
+                    resultMsg.style.color = 'orange';
+                    resultMsg.innerText = '⚠️ สมาชิกรายนี้มีการ์ดใบนี้อยู่แล้วครับ';
+                    cardsText.innerText = result.cards.join(', ');
+                    cardListDisplay.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                resultMsg.style.color = 'red';
+                resultMsg.innerText = '❌ เกิดข้อผิดพลาด: ' + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
