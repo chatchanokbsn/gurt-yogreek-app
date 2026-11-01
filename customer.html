@@ -52,14 +52,15 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 2. รายการการ์ดทั้งหมดที่มีในระบบร้าน (ตัวอย่างมี 6 แบบ)
-        const ALL_CARDS = [
-            { id: 'card_001', name: 'Original Greek' },
-            { id: 'card_002', name: 'Honey Berry' },
-            { id: 'card_003', name: 'Matcha Lover' },
-            { id: 'card_004', name: 'Mango Sticky' },
-            { id: 'card_005', name: 'Dark Choco' },
-            { id: 'card_006', name: 'Secret Rare' }
-        ];
+        // รายการการ์ดทั้งหมดในคอลเลกชันร้าน Gurt Yogreek
+const CARD_CATALOG = [
+    { id: "c1", name: "Greek Original", rarity: "Common", desc: "เนื้อแน่น เข้มข้น ต้นตำรับ", icon: "🥣" },
+    { id: "c2", name: "Wild Honey", rarity: "Common", desc: "น้ำผึ้งป่าแท้ หวานหอมละมุน", icon: "🍯" },
+    { id: "c3", name: "Granola Crunchy", rarity: "Common", desc: "ธัญพืชกรุบกรอบ เคี้ยวเพลิน", icon: "🌾" },
+    { id: "c4", name: "Fresh Strawberry", rarity: "Rare", desc: "สตอเบอร์รี่สดคัดพิเศษ ลูกโตๆ", icon: "🍓" },
+    { id: "c5", name: "Almond Roast", rarity: "Rare", desc: "อัลมอนด์อบกรอบ หอมมัน", icon: "🥜" },
+    { id: "c6", name: "Special Maskot Gurt", rarity: "Epic", desc: "การ์ดลับมาสคอตประจำร้าน หายากสุดๆ!", icon: "🦄" }
+];
 
         // 3. เริ่มต้นทำงานผ่าน LINE LIFF
         async function initializeLiff() {
