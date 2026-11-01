@@ -102,7 +102,7 @@
 
     <!-- Card Detail Modal -->
     <div id="card-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl relative">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
             <div id="modal-icon" class="text-6xl my-2">🥣</div>
             <h3 id="modal-name" class="font-bold text-lg text-slate-800">-</h3>
@@ -114,7 +114,7 @@
     <script>
         // ตั้งค่า Supabase ของคุณ
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw'; // ใส่รหัส anon public ของคุณที่นี่
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // อย่าลืมใส่รหัส anon ของคุณ
         
         let supabase = null;
         try {
@@ -137,7 +137,7 @@
         function switchTab(tab) {
             const isC = tab === 'customer';
             document.getElementById('tab-customer').classList.toggle('hidden', !isC);
-            document.getElementById('tab-staff').classList.toggle('hidden', !isC);
+            document.getElementById('tab-staff').classList.toggle('hidden', isC);
             document.getElementById('btn-customer').className = isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
             document.getElementById('btn-staff').className = !isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
         }
@@ -270,13 +270,4 @@
             alert('ยินดีด้วยครับ! แสดงหน้าจอนี้ให้พนักงานหน้าร้านเพื่อรับกรีกโยเกิร์ตฟรี 1 ถ้วยได้เลยครับ');
         }
 
-        // ผูกฟังก์ชันเข้ากับ window เพื่อป้องกันปัญหา Scope
-        window.switchTab = switchTab;
-        window.loadAlbum = loadAlbum;
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.staffDrawCard = staffDrawCard;
-        window.claimReward = claimReward;
-    </script>
-</body>
-</html>
+        // บังคับผูกฟังก์ชันเข้ากับ Global
