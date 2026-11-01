@@ -23,7 +23,6 @@
             position: absolute; bottom: 20px; right: -60px; width: 240px; height: 240px;
             background: rgba(254, 243, 199, 0.6); border-radius: 50%; filter: blur(50px); z-index: -1;
         }
-        /* Distinct Rarity Glow & Styles */
         .card-common { background: #ffffff; border-color: #e2e8f0; }
         .card-rare { 
             background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%); 
@@ -68,11 +67,26 @@
 
         <!-- ================= CUSTOMER TAB ================= -->
         <section id="tab-customer" class="space-y-4">
-            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100">
-                <h2 class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5 text-sm"><span>🔍</span> Your Card Collection</h2>
+            <!-- View Album Card -->
+            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 space-y-3">
+                <h2 class="font-semibold text-slate-700 flex items-center gap-1.5 text-sm"><span>🔍</span> Your Card Collection</h2>
                 <div class="flex gap-2">
-                    <input type="text" id="cust-uid" placeholder="Enter LINE UID or Phone Number" class="flex-grow border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    <input type="text" id="cust-uid" placeholder="LINE UID or Phone Number" class="flex-grow border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
                     <button id="btn-load-album" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-2xl text-sm font-medium hover:opacity-90 transition shadow-md shadow-pink-500/20">View</button>
+                </div>
+            </div>
+
+            <!-- Upload Slip Card -->
+            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 space-y-3">
+                <h2 class="font-semibold text-slate-700 flex items-center gap-1.5 text-sm"><span>💳</span> Submit Payment Slip</h2>
+                <div class="space-y-2">
+                    <input type="text" id="slip-uid" placeholder="LINE UID or Phone Number" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    <input type="text" id="slip-order-id" placeholder="Order ID / Receipt No. (e.g. ORD-001)" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1 font-medium">Upload Transfer Slip (Image)</label>
+                        <input type="file" id="slip-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 cursor-pointer">
+                    </div>
+                    <button id="btn-upload-slip" class="w-full bg-slate-900 text-white py-2.5 rounded-2xl text-sm font-medium hover:bg-slate-800 transition shadow-md">Upload & Confirm Order</button>
                 </div>
             </div>
 
@@ -160,7 +174,7 @@
     <script>
         // Supabase configuration
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
         let supabaseClient = null;
         try {
@@ -190,7 +204,7 @@
 
         async function loadAlbum() {
             if (!supabaseClient) {
-                alert('⚠️ Supabase client is not initialized. Please check your API Key.');
+                alert('⚠️ Supabase client is not initialized.');
                 return;
             }
             const uid = document.getElementById('cust-uid').value.trim();
@@ -211,139 +225,4 @@
                     let { error: insertError } = await supabaseClient.from('members').insert([{ line_uid: uid, cards: [] }]);
                     if (insertError) {
                         console.error("Supabase Insert Error:", insertError);
-                        alert('❌ Error creating member account: ' + insertError.message);
-                        return;
-                    }
-                }
-
-                document.getElementById('customer-content').classList.remove('hidden');
-                document.getElementById('disp-uid').innerText = uid;
-                renderGrid(cards);
-
-            } catch (err) {
-                console.error("Unexpected Error:", err);
-                alert('❌ Unexpected error occurred: ' + err.message);
-            }
-        }
-
-        function renderGrid(userCards) {
-            const grid = document.getElementById('album-grid');
-            grid.innerHTML = '';
-            let count = 0;
-
-            CATALOG.forEach(card => {
-                const owned = userCards.includes(card.id);
-                if(owned) count++;
-
-                let tierClass = 'card-common';
-                let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
-                if(owned && card.rarity === 'Epic') {
-                    tierClass = 'card-epic';
-                    badgeStyle = 'bg-purple-100 text-purple-700 border-purple-300';
-                } else if(owned && card.rarity === 'Rare') {
-                    tierClass = 'card-rare';
-                    badgeStyle = 'bg-cyan-100 text-cyan-700 border-cyan-300';
-                } else if(!owned) {
-                    tierClass = 'bg-slate-50/60 border-slate-200 opacity-40 grayscale';
-                }
-
-                const el = document.createElement('div');
-                el.className = `p-3.5 rounded-3xl border transition card-hover cursor-pointer flex flex-col justify-between ${tierClass}`;
-                el.addEventListener('click', () => openModal(card, owned));
-                el.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-3xl">${card.icon}</span>
-                            <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-bold ${badgeStyle}">${card.rarity}</span>
-                        </div>
-                        <h4 class="font-bold text-xs text-slate-800">${card.name}</h4>
-                    </div>
-                    <div class="mt-3 pt-2 border-t border-slate-100/80 text-[10px] font-medium flex items-center justify-between">
-                        <span class="${owned ? 'text-pink-600 font-semibold' : 'text-slate-400'}">${owned ? '✓ Collected' : '🔒 Locked'}</span>
-                    </div>
-                `;
-                grid.appendChild(el);
-            });
-
-            document.getElementById('disp-count').innerText = count;
-            document.getElementById('disp-total').innerText = CATALOG.length;
-            const percent = (count / CATALOG.length) * 100;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-
-            const btnClaim = document.getElementById('btn-claim');
-            if(count >= CATALOG.length) {
-                btnClaim.disabled = false;
-                btnClaim.className = 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold hover:opacity-90 shadow-md shadow-emerald-500/20 cursor-pointer transition';
-            }
-        }
-
-        function openModal(card, owned) {
-            document.getElementById('modal-icon').innerText = card.icon;
-            document.getElementById('modal-name').innerText = card.name;
-            document.getElementById('modal-desc').innerText = owned ? card.desc : '🔒 You haven’t collected this card yet. Purchase special store menus to draw it!';
-            const rarityEl = document.getElementById('modal-rarity');
-            rarityEl.innerText = card.rarity;
-            rarityEl.className = `inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${card.rarity === 'Epic' ? 'bg-purple-100 text-purple-700' : card.rarity === 'Rare' ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-700'}`;
-            document.getElementById('card-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('card-modal').classList.add('hidden');
-        }
-
-        async function staffDrawCard() {
-            if (!supabaseClient) {
-                alert('⚠️ Supabase client is not initialized.');
-                return;
-            }
-            const uid = document.getElementById('staff-uid').value.trim();
-            const orderId = document.getElementById('staff-order-id').value.trim();
-            const isVerified = document.getElementById('pay-verified').checked;
-
-            if(!uid) { alert('Please enter customer UID or phone number.'); return; }
-            if(!orderId) { alert('Please enter an Order ID / Receipt Number.'); return; }
-            if(!isVerified) { alert('Please confirm payment verification before drawing a card (Limit 1 card per paid order).'); return; }
-
-            const rand = Math.random() * 100;
-            let rarity = 'Common';
-            if(rand > 95) rarity = 'Epic';
-            else if(rand > 70) rarity = 'Rare';
-
-            const filtered = CATALOG.filter(c => c.rarity === rarity);
-            const card = filtered[Math.floor(Math.random() * filtered.length)];
-
-            let { data } = await supabaseClient.from('members').select('*').eq('line_uid', uid).maybeSingle();
-            let cards = data ? data.cards || [] : [];
-            if(!cards.includes(card.id)) cards.push(card.id);
-
-            await supabaseClient.from('members').upsert({ line_uid: uid, cards: cards, updated_at: new Date() });
-
-            document.getElementById('staff-result').classList.remove('hidden');
-            document.getElementById('res-icon').innerText = card.icon;
-            document.getElementById('res-name').innerText = card.name;
-            document.getElementById('res-desc').innerText = card.desc;
-            
-            const badge = document.getElementById('res-rarity-badge');
-            badge.innerText = card.rarity;
-            badge.className = `inline-block px-3 py-0.5 rounded-full text-xs font-semibold ${card.rarity === 'Epic' ? 'bg-purple-100 text-purple-700' : card.rarity === 'Rare' ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-700'}`;
-            
-            alert(`Successfully issued "${card.name}" (${card.rarity}) for Order #${orderId}!`);
-        }
-
-        function claimReward() {
-            alert('Congratulations! Show this screen to our store staff to redeem your free Greek Yogurt cup.');
-        }
-
-        // Event listeners initialization
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('btn-customer').addEventListener('click', () => switchTab('customer'));
-            document.getElementById('btn-staff').addEventListener('click', () => switchTab('staff'));
-            document.getElementById('btn-load-album').addEventListener('click', loadAlbum);
-            document.getElementById('btn-claim').addEventListener('click', claimReward);
-            document.getElementById('btn-staff-draw').addEventListener('click', staffDrawCard);
-            const closeModalBtn = document.getElementById('btn-close-modal');
-            if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
-        });
-    </script>
-</body>
-</html>
+                        alert('❌ Error creating
