@@ -10,23 +10,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #FAF7F2; }
-        .card-glow-epic { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); border-color: #c084fc !important; }
-        .card-glow-rare { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); border-color: #60a5fa !important; }
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: linear-gradient(135deg, #FFFDF9 0%, #FFF3EC 50%, #FEEFEE 100%);
+            min-height: 100vh;
+        }
+        .bg-blob-1 {
+            position: absolute.innerWidth; top: -50px; left: -50px; width: 200px; height: 200px;
+            background: rgba(254, 205, 211, 0.4); border-radius: 50%; filter: blur(40px); z-index: -1;
+        }
+        .bg-blob-2 {
+            position: absolute; bottom: 10px; right: -50px; width: 220px; height: 220px;
+            background: rgba(254, 243, 199, 0.5); border-radius: 50%; filter: blur(40px); z-index: -1;
+        }
+        .card-glow-epic { box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-color: #c084fc !important; }
+        .card-glow-rare { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); border-color: #60a5fa !important; }
+        .card-hover:hover { transform: translateY(-3px); transition: all 0.2s ease; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col">
+<body class="text-slate-800 flex flex-col relative overflow-x-hidden">
+
+    <!-- Background Decorative Elements -->
+    <div class="bg-blob-1"></div>
+    <div class="bg-blob-2"></div>
 
     <!-- Header -->
-    <header class="bg-white/85 backdrop-blur-md shadow-sm border-b border-amber-100 sticky top-0 z-40">
+    <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-amber-100/60 sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <span class="text-2xl">🥣</span>
-                <h1 class="font-bold text-lg text-pink-600">Gurt Yogreek</h1>
+                <span class="text-2xl animate-bounce">🥣</span>
+                <h1 class="font-bold text-lg text-pink-600 tracking-wide">Gurt Yogreek</h1>
             </div>
-            <div class="flex space-x-1 bg-amber-100/60 p-1 rounded-xl text-xs font-medium">
+            <div class="flex space-x-1 bg-amber-100/50 p-1 rounded-xl text-xs font-medium border border-amber-200/50">
                 <button id="btn-customer" class="px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm">อัลบั้มลูกค้า</button>
-                <button id="btn-staff" class="px-3 py-1.5 rounded-lg transition text-slate-600">พนักงาน (แจก)</button>
+                <button id="btn-staff" class="px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600">พนักงาน (แจก)</button>
             </div>
         </div>
     </header>
@@ -36,44 +53,45 @@
 
         <!-- ================= CUSTOMER TAB ================= -->
         <section id="tab-customer" class="space-y-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100">
-                <h2 class="font-semibold text-slate-700 mb-2">🔍 อัลบั้มสะสมการ์ดของคุณ</h2>
+            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100">
+                <h2 class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><span>🔍</span> อัลบั้มสะสมการ์ดของคุณ</h2>
                 <div class="flex gap-2">
-                    <input type="text" id="cust-uid" placeholder="LINE UID หรือเบอร์โทรศัพท์" class="flex-grow border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-500">
-                    <button id="btn-load-album" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-pink-700 transition">เปิดดู</button>
+                    <input type="text" id="cust-uid" placeholder="LINE UID หรือเบอร์โทรศัพท์" class="flex-grow border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    <button id="btn-load-album" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-2xl text-sm font-medium hover:opacity-90 transition shadow-md shadow-pink-500/20">เปิดดู</button>
                 </div>
             </div>
 
             <div id="customer-content" class="hidden space-y-4">
                 <!-- Profile & Progress Bar -->
-                <div class="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-5 rounded-2xl shadow-lg space-y-3">
-                    <div class="flex justify-between items-center">
+                <div class="bg-gradient-to-br from-pink-500 via-rose-500 to-orange-400 text-white p-5 rounded-3xl shadow-xl shadow-pink-500/10 space-y-3 relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 text-8xl opacity-10">🍓</div>
+                    <div class="flex justify-between items-center relative z-10">
                         <div>
-                            <p class="text-xs text-pink-100">สมาชิกผู้สะสม</p>
+                            <p class="text-xs text-pink-100 font-medium">สมาชิกผู้สะสม</p>
                             <h3 id="disp-uid" class="font-bold text-sm truncate max-w-[180px]">-</h3>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs bg-white/20 px-2.5 py-1 rounded-full font-medium">สะสม <span id="disp-count">0</span>/<span id="disp-total">0</span></span>
+                            <span class="text-xs bg-white/20 backdrop-blur-md px-3 py-1 rounded-full font-semibold">สะสม <span id="disp-count">0</span>/<span id="disp-total">0</span></span>
                         </div>
                     </div>
                     <!-- Progress Bar -->
-                    <div class="w-full bg-black/20 rounded-full h-2.5 overflow-hidden">
-                        <div id="progress-bar" class="bg-amber-300 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div class="w-full bg-black/20 rounded-full h-3 overflow-hidden p-0.5 relative z-10">
+                        <div id="progress-bar" class="bg-amber-300 h-2 rounded-full transition-all duration-700 shadow-inner" style="width: 0%"></div>
                     </div>
                 </div>
 
                 <!-- Reward Status Box -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 flex justify-between items-center">
+                <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 flex justify-between items-center">
                     <div>
-                        <h3 class="font-semibold text-sm text-slate-700">🎁 รางวัลสะสมครบชุด</h3>
-                        <p class="text-xs text-slate-400">กรีกโยเกิร์ตพรีเมียมฟรี 1 ถ้วย</p>
+                        <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-1.5"><span>🎁</span> รางวัลสะสมครบชุด</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">กรีกโยเกิร์ตพรีเมียมฟรี 1 ถ้วย</p>
                     </div>
-                    <button id="btn-claim" disabled class="bg-slate-200 text-slate-400 px-4 py-2 rounded-xl text-xs font-semibold cursor-not-allowed transition">แลกสิทธิ์</button>
+                    <button id="btn-claim" disabled class="bg-slate-200 text-slate-400 px-4 py-2.5 rounded-2xl text-xs font-semibold cursor-not-allowed transition">แลกสิทธิ์</button>
                 </div>
 
                 <!-- Card Grid -->
                 <div>
-                    <h3 class="font-semibold text-sm mb-3 text-slate-700">🎴 คอลเลกชันวัตถุดิบทั้งหมด (แตะเพื่อดูรายละเอียด)</h3>
+                    <h3 class="font-semibold text-sm mb-3 text-slate-700 flex items-center gap-1.5"><span>🎴</span> คอลเลกชันวัตถุดิบทั้งหมด <span class="text-[11px] font-normal text-slate-400">(แตะเพื่อดูรายละเอียด)</span></h3>
                     <div id="album-grid" class="grid grid-cols-2 gap-3"></div>
                 </div>
             </div>
@@ -81,19 +99,19 @@
 
         <!-- ================= STAFF TAB ================= -->
         <section id="tab-staff" class="hidden space-y-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 space-y-3">
-                <h2 class="font-semibold text-slate-700">⚡ โหมดพนักงาน: สุ่มแจกการ์ด</h2>
+            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 space-y-3">
+                <h2 class="font-semibold text-slate-700 flex items-center gap-1.5"><span>⚡</span> โหมดพนักงาน: สุ่มแจกการ์ด</h2>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">LINE UID / เบอร์ลูกค้า</label>
-                    <input type="text" id="staff-uid" placeholder="ระบุตัวตนลูกค้า" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-500">
+                    <input type="text" id="staff-uid" placeholder="ระบุตัวตนลูกค้า" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
                 </div>
-                <button id="btn-staff-draw" class="w-full bg-slate-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition shadow-md">🎲 สุ่มแจกการ์ดให้ลูกค้า</button>
+                <button id="btn-staff-draw" class="w-full bg-slate-900 text-white py-3 rounded-2xl text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20">🎲 สุ่มแจกการ์ดให้ลูกค้า</button>
             </div>
 
-            <div id="staff-result" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-pink-200 text-center space-y-2">
-                <p class="text-xs text-pink-600 font-bold uppercase">🎉 แจกการ์ดสำเร็จ!</p>
-                <div id="res-icon" class="text-5xl my-2">🍓</div>
-                <h3 id="res-name" class="font-bold text-lg">-</h3>
+            <div id="staff-result" class="hidden bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-md border border-pink-200 text-center space-y-2 animate-pulse">
+                <p class="text-xs text-pink-600 font-bold uppercase tracking-wider">🎉 แจกการ์ดสำเร็จ!</p>
+                <div id="res-icon" class="text-6xl my-2">🍓</div>
+                <h3 id="res-name" class="font-bold text-lg text-slate-800">-</h3>
                 <p id="res-desc" class="text-xs text-slate-500">-</p>
             </div>
         </section>
@@ -102,21 +120,20 @@
 
     <!-- Card Detail Modal -->
     <div id="card-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl relative">
-            <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            <div id="modal-icon" class="text-6xl my-2">🥣</div>
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl relative border border-pink-100">
+            <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition">✕</button>
+            <div id="modal-icon" class="text-7xl my-2 animate-bounce">🥣</div>
             <h3 id="modal-name" class="font-bold text-lg text-slate-800">-</h3>
-            <span id="modal-rarity" class="inline-block px-3 py-1 rounded-full text-xs font-semibold">Common</span>
-            <p id="modal-desc" class="text-xs text-slate-500 leading-relaxed">-</p>
+            <span id="modal-rarity" class="inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Common</span>
+            <p id="modal-desc" class="text-xs text-slate-500 leading-relaxed bg-amber-50/50 p-3 rounded-2xl">-</p>
         </div>
     </div>
 
     <script>
-        // ตั้งค่า Supabase ของคุณ (เปลี่ยน YOUR_SUPABASE_ANON_KEY เป็นรหัสจริงของคุณ)
+        // ตั้งค่า Supabase ของคุณ
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
-        // ใช้ชื่อตัวแปรเป็น supabaseClient แทน เพื่อไม่ให้ชนกับชื่อระบบ CDN 
         let supabaseClient = null;
         try {
             if (window.supabase) {
@@ -139,8 +156,8 @@
             const isC = tab === 'customer';
             document.getElementById('tab-customer').classList.toggle('hidden', !isC);
             document.getElementById('tab-staff').classList.toggle('hidden', isC);
-            document.getElementById('btn-customer').className = isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
-            document.getElementById('btn-staff').className = !isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600';
+            document.getElementById('btn-customer').className = isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
+            document.getElementById('btn-staff').className = !isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
         }
 
         async function loadAlbum() {
@@ -191,24 +208,24 @@
                 if(owned) count++;
 
                 let glowClass = '';
-                if(owned && card.rarity === 'Epic') glowClass = 'card-glow-epic bg-purple-50/40';
-                else if(owned && card.rarity === 'Rare') glowClass = 'card-glow-rare bg-blue-50/40';
+                if(owned && card.rarity === 'Epic') glowClass = 'card-glow-epic bg-purple-50/60 border-purple-200';
+                else if(owned && card.rarity === 'Rare') glowClass = 'card-glow-rare bg-blue-50/60 border-blue-200';
                 else if(owned) glowClass = 'bg-white border-pink-200 shadow-sm';
-                else glowClass = 'bg-slate-50 border-slate-200 opacity-40 grayscale';
+                else glowClass = 'bg-slate-50/60 border-slate-200 opacity-40 grayscale';
 
                 const el = document.createElement('div');
-                el.className = `p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between ${glowClass}`;
+                el.className = `p-3.5 rounded-3xl border transition card-hover cursor-pointer flex flex-col justify-between ${glowClass}`;
                 el.addEventListener('click', () => openModal(card, owned));
                 el.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-2xl">${card.icon}</span>
-                            <span class="text-[9px] px-2 py-0.5 rounded-full border font-semibold">${card.rarity}</span>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">${card.icon}</span>
+                            <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-semibold bg-white/60">${card.rarity}</span>
                         </div>
                         <h4 class="font-bold text-xs text-slate-800">${card.name}</h4>
                     </div>
-                    <div class="mt-2 pt-1 border-t border-slate-100 text-[10px] font-medium ${owned ? 'text-pink-600' : 'text-slate-400'}">
-                        ${owned ? '✓ สะสมแล้ว' : '🔒 ล็อกอยู่'}
+                    <div class="mt-3 pt-2 border-t border-slate-100/80 text-[10px] font-medium flex items-center justify-between">
+                        <span class="${owned ? 'text-pink-600 font-semibold' : 'text-slate-400'}">${owned ? '✓ สะสมแล้ว' : '🔒 ล็อกอยู่'}</span>
                     </div>
                 `;
                 grid.appendChild(el);
@@ -222,7 +239,7 @@
             const btnClaim = document.getElementById('btn-claim');
             if(count >= CATALOG.length) {
                 btnClaim.disabled = false;
-                btnClaim.className = 'bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-pink-700 shadow-md cursor-pointer transition';
+                btnClaim.className = 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold hover:opacity-90 shadow-md shadow-emerald-500/20 cursor-pointer transition';
             }
         }
 
@@ -278,8 +295,8 @@
             document.getElementById('btn-load-album').addEventListener('click', loadAlbum);
             document.getElementById('btn-claim').addEventListener('click', claimReward);
             document.getElementById('btn-staff-draw').addEventListener('click', staffDrawCard);
-            dd = document.getElementById('btn-close-modal');
-            if(dd) dd.addEventListener('click', closeModal);
+            const closeModalBtn = document.getElementById('btn-close-modal');
+            if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
         });
     </script>
 </body>
