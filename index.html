@@ -112,14 +112,15 @@
     </div>
 
     <script>
-        // ตั้งค่า Supabase ของคุณ (อย่าลืมเปลี่ยน YOUR_SUPABASE_ANON_KEY เป็นรหัสจริงของคุณ)
+        // ตั้งค่า Supabase ของคุณ (เปลี่ยน YOUR_SUPABASE_ANON_KEY เป็นรหัสจริงของคุณ)
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw';
         
-        let supabase = null;
+        // ใช้ชื่อตัวแปรเป็น supabaseClient แทน เพื่อไม่ให้ชนกับชื่อระบบ CDN 
+        let supabaseClient = null;
         try {
             if (window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             }
         } catch (e) {
             console.error("Supabase Init Error:", e);
@@ -143,7 +144,7 @@
         }
 
         async function loadAlbum() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
                 return;
             }
@@ -151,7 +152,7 @@
             if(!uid) { alert('กรุณากรอก UID หรือเบอร์โทรศัพท์'); return; }
 
             try {
-                let { data, error } = await supabase.from('members').select('*').eq('line_uid', uid).maybeSingle();
+                let { data, error } = await supabaseClient.from('members').select('*').eq('line_uid', uid).maybeSingle();
                 
                 if (error) {
                     console.error("Supabase Select Error:", error);
@@ -162,7 +163,7 @@
                 let cards = data ? data.cards || [] : [];
 
                 if(!data) {
-                    let { error: insertError } = await supabase.from('members').insert([{ line_uid: uid, cards: [] }]);
+                    let { error: insertError } = await supabaseClient.from('members').insert([{ line_uid: uid, cards: [] }]);
                     if (insertError) {
                         console.error("Supabase Insert Error:", insertError);
                         alert('❌ เกิดข้อผิดพลาดในการสร้างบัญชี: ' + insertError.message);
@@ -238,7 +239,7 @@
         }
 
         async function staffDrawCard() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
                 return;
             }
@@ -253,11 +254,11 @@
             const filtered = CATALOG.filter(c => c.rarity === rarity);
             const card = filtered[Math.floor(Math.random() * filtered.length)];
 
-            let { data } = await supabase.from('members').select('*').eq('line_uid', uid).maybeSingle();
+            let { data } = await supabaseClient.from('members').select('*').eq('line_uid', uid).maybeSingle();
             let cards = data ? data.cards || [] : [];
             if(!cards.includes(card.id)) cards.push(card.id);
 
-            await supabase.from('members').upsert({ line_uid: uid, cards: cards, updated_at: new Date() });
+            await supabaseClient.from('members').upsert({ line_uid: uid, cards: cards, updated_at: new Date() });
 
             document.getElementById('staff-result').classList.remove('hidden');
             document.getElementById('res-icon').innerText = card.icon;
@@ -270,14 +271,15 @@
             alert('ยินดีด้วยครับ! แสดงหน้าจอนี้ให้พนักงานหน้าร้านเพื่อรับกรีกโยเกิร์ตฟรี 1 ถ้วยได้เลยครับ');
         }
 
-        // ผูก Event Listener อัตโนมัติเมื่อโหลดหน้าเว็บเสร็จ (ปลอดภัย 100%)
+        // ผูก Event Listener เมื่อโหลดหน้าเว็บเสร็จ
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btn-customer').addEventListener('click', () => switchTab('customer'));
             document.getElementById('btn-staff').addEventListener('click', () => switchTab('staff'));
             document.getElementById('btn-load-album').addEventListener('click', loadAlbum);
             document.getElementById('btn-claim').addEventListener('click', claimReward);
             document.getElementById('btn-staff-draw').addEventListener('click', staffDrawCard);
-            document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+            dd = document.getElementById('btn-close-modal');
+            if(dd) dd.addEventListener('click', closeModal);
         });
     </script>
 </body>
