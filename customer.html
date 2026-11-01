@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurt Yogreek - อัลบั้มการ์ดสะสมของคุณ</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; }
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #28a745; }
+        h2 { margin: 10px 0 5px; color: #2c3e50; }
+        p.sub { color: #666; font-size: 14px; margin-bottom: 20px; }
+        
+        /* สไตล์ตารางแสดงการ์ด */
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+        .card-item { background: #e9ecef; border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px dashed #ccc; transition: 0.3s; }
+        .card-item.unlocked { background: #d4edda; border: 2px solid #28a745; color: #155724; font-weight: bold; }
+        .card-item img { width: 40px; height: 40px; margin-bottom: 5px; }
+        
+        #loading { font-size: 16px; color: #007bff; margin: 30px 0; }
+        #errorMsg { color: red; font-weight: bold; margin-top: 20px; }
+    </style>
+    <!-- โหลด LINE LIFF SDK และ Supabase SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div id="loading">⏳ กำลังโหลดข้อมูลบัญชี LINE ของคุณ...</div>
+        
+        <div id="content" style="display: none;">
+            <img id="userAvatar" class="profile-img" src="" alt="Profile">
+            <h2 id="userName">ชื่อผู้ใช้</h2>
+            <p class="sub">อัลบั้มการ์ดสะสมพิเศษ Gurt Yogreek</p>
+            
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            
+            <h3>การ์ดที่คุณสะสมทั้งหมด</h3>
+            <div class="card-grid" id="cardGrid">
+                <!-- รายการการ์ดจะถูกสร้างด้วย JavaScript ตรงนี้ -->
+            </div>
+        </div>
+
+        <p id="errorMsg"></p>
+    </div>
+
+    <script>
+        // 1. ตั้งค่า Supabase
+        const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwMy03w3RDW_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw'; 
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. รายการการ์ดทั้งหมดที่มีในระบบร้าน (ตัวอย่างมี 6 แบบ)
+        const ALL_CARDS = [
+            { id: 'card_001', name: 'Original Greek' },
+            { id: 'card_002', name: 'Honey Berry' },
+            { id: 'card_003', name: 'Matcha Lover' },
+            { id: 'card_004', name: 'Mango Sticky' },
+            { id: 'card_005', name: 'Dark Choco' },
+            { id: 'card_006', name: 'Secret Rare' }
+        ];
+
+        // 3. เริ่มต้นทำงานผ่าน LINE LIFF
+        async function initializeLiff() {
+            try {
+                // แทนที่ด้วย LIFF ID ของคุณ (หากทดสอบบนเว็บทั่วไป สามารถใส่โหมดจำลองได้)
+                await liff.init({ liffId: "2010782959-wmtuEgU0" });
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    document.getElementById('userAvatar').src = profile.pictureUrl;
+                    document.getElementById('userName').innerText = profile.displayName;
+                    
+                    // ดึงการ์ดของสมาชิกคนนี้จาก Supabase โดยใช้ lineUid
+                    await fetchMemberCards(profile.userId);
+                }
+            } catch (err) {
+                console.error('LIFF Initialization failed:', err);
+                // กรณีรันเทสบนคอมพิวเตอร์ทั่วไปโดยไม่ผ่าน LINE App ให้ใช้ UID จำลองเทสได้
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMsg').innerText = '⚠️ กรุณาเปิดผ่านแอปพลิเคชัน LINE หรือตั้งค่า LIFF ID ให้ถูกต้อง';
+                
+                // สำหรับพรีวิวทดสอบบนเบราว์เซอร์ ( uncomment บรรทัดล่างเพื่อเทสได้ )
+                // fetchMemberCards('test_line_uid_001');
+            }
+        }
+
+        // 4. ดึงข้อมูลการ์ดจาก Supabase
+        async function fetchMemberCards(lineUid) {
+            try {
+                let { data, error } = await supabaseClient
+                    .from('members')
+                    .select('*')
+                    .eq('member_id', lineUid)
+                    .maybeSingle();
+
+                let ownedCards = data ? (data.cards || []) : [];
+
+                renderCardGrid(ownedCards);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMsg').innerText = '❌ ไม่สามารถโหลดข้อมูลการ์ดได้: ' + err.message;
+            }
+        }
+
+        // 5. เรนเดอร์หน้าจอแสดงผลการ์ด (ปลดล็อก vs ล็อก)
+        function renderCardGrid(ownedCards) {
+            const gridContainer = document.getElementById('cardGrid');
+            gridContainer.innerHTML = '';
+
+            ALL_CARDS.forEach(card => {
+                const isUnlocked = ownedCards.includes(card.id);
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `card-item ${isUnlocked ? 'unlocked' : ''}`;
+                
+                cardDiv.innerHTML = `
+                    <div style="font-size: 24px; margin-bottom: 5px;">${isUnlocked ? '🎉' : '🔒'}</div>
+                    <div style="font-size: 13px;">${card.name}</div>
+                    <div style="font-size: 10px; margin-top: 4px; color: ${isUnlocked ? '#28a745' : '#888'};">
+                        ${isUnlocked ? 'สะสมแล้ว' : 'ยังไม่ได้รับ'}
+                    </div>
+                `;
+                gridContainer.appendChild(cardDiv);
+            });
+        }
+
+        // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
+        window.onload = initializeLiff;
+    </script>
+</body>
+</html>
