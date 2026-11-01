@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,24 +8,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: 'Prompt', sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #FFFDF9 0%, #FFF3EC 50%, #FEEFEE 100%);
             min-height: 100vh;
         }
         .bg-blob-1 {
-            position: absolute.innerWidth; top: -50px; left: -50px; width: 200px; height: 200px;
-            background: rgba(254, 205, 211, 0.4); border-radius: 50%; filter: blur(40px); z-index: -1;
+            position: absolute; top: -60px; left: -60px; width: 220px; height: 220px;
+            background: rgba(254, 205, 211, 0.45); border-radius: 50%; filter: blur(50px); z-index: -1;
         }
         .bg-blob-2 {
-            position: absolute; bottom: 10px; right: -50px; width: 220px; height: 220px;
-            background: rgba(254, 243, 199, 0.5); border-radius: 50%; filter: blur(40px); z-index: -1;
+            position: absolute; bottom: 20px; right: -60px; width: 240px; height: 240px;
+            background: rgba(254, 243, 199, 0.6); border-radius: 50%; filter: blur(50px); z-index: -1;
         }
-        .card-glow-epic { box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-color: #c084fc !important; }
-        .card-glow-rare { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); border-color: #60a5fa !important; }
-        .card-hover:hover { transform: translateY(-3px); transition: all 0.2s ease; }
+        /* Distinct Rarity Glow & Styles */
+        .card-common { background: #ffffff; border-color: #e2e8f0; }
+        .card-rare { 
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%); 
+            border-color: #38bdf8; 
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); 
+        }
+        .card-epic { 
+            background: linear-gradient(135deg, #faf5ff 0%, #fdf4f8 100%); 
+            border-color: #c084fc; 
+            box-shadow: 0 0 25px rgba(192, 132, 252, 0.4); 
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 20px rgba(192, 132, 252, 0.3); }
+            50% { box-shadow: 0 0 35px rgba(192, 132, 252, 0.6); }
+        }
+        .card-hover:hover { transform: translateY(-4px); transition: all 0.25s ease; }
     </style>
 </head>
 <body class="text-slate-800 flex flex-col relative overflow-x-hidden">
@@ -42,8 +57,8 @@
                 <h1 class="font-bold text-lg text-pink-600 tracking-wide">Gurt Yogreek</h1>
             </div>
             <div class="flex space-x-1 bg-amber-100/50 p-1 rounded-xl text-xs font-medium border border-amber-200/50">
-                <button id="btn-customer" class="px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm">อัลบั้มลูกค้า</button>
-                <button id="btn-staff" class="px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600">พนักงาน (แจก)</button>
+                <button id="btn-customer" class="px-3.5 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm font-semibold">Customer Album</button>
+                <button id="btn-staff" class="px-3.5 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600">Staff Draw</button>
             </div>
         </div>
     </header>
@@ -54,10 +69,10 @@
         <!-- ================= CUSTOMER TAB ================= -->
         <section id="tab-customer" class="space-y-4">
             <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100">
-                <h2 class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><span>🔍</span> อัลบั้มสะสมการ์ดของคุณ</h2>
+                <h2 class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5 text-sm"><span>🔍</span> Your Card Collection</h2>
                 <div class="flex gap-2">
-                    <input type="text" id="cust-uid" placeholder="LINE UID หรือเบอร์โทรศัพท์" class="flex-grow border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
-                    <button id="btn-load-album" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-2xl text-sm font-medium hover:opacity-90 transition shadow-md shadow-pink-500/20">เปิดดู</button>
+                    <input type="text" id="cust-uid" placeholder="Enter LINE UID or Phone Number" class="flex-grow border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    <button id="btn-load-album" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-2xl text-sm font-medium hover:opacity-90 transition shadow-md shadow-pink-500/20">View</button>
                 </div>
             </div>
 
@@ -67,11 +82,11 @@
                     <div class="absolute -right-6 -bottom-6 text-8xl opacity-10">🍓</div>
                     <div class="flex justify-between items-center relative z-10">
                         <div>
-                            <p class="text-xs text-pink-100 font-medium">สมาชิกผู้สะสม</p>
+                            <p class="text-xs text-pink-100 font-medium">Collector ID</p>
                             <h3 id="disp-uid" class="font-bold text-sm truncate max-w-[180px]">-</h3>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs bg-white/20 backdrop-blur-md px-3 py-1 rounded-full font-semibold">สะสม <span id="disp-count">0</span>/<span id="disp-total">0</span></span>
+                            <span class="text-xs bg-white/20 backdrop-blur-md px-3 py-1 rounded-full font-semibold">Collected <span id="disp-count">0</span>/<span id="disp-total">0</span></span>
                         </div>
                     </div>
                     <!-- Progress Bar -->
@@ -83,15 +98,15 @@
                 <!-- Reward Status Box -->
                 <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 flex justify-between items-center">
                     <div>
-                        <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-1.5"><span>🎁</span> รางวัลสะสมครบชุด</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">กรีกโยเกิร์ตพรีเมียมฟรี 1 ถ้วย</p>
+                        <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-1.5"><span>🎁</span> Complete Collection Reward</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Free 1 Premium Greek Yogurt Cup</p>
                     </div>
-                    <button id="btn-claim" disabled class="bg-slate-200 text-slate-400 px-4 py-2.5 rounded-2xl text-xs font-semibold cursor-not-allowed transition">แลกสิทธิ์</button>
+                    <button id="btn-claim" disabled class="bg-slate-200 text-slate-400 px-4 py-2.5 rounded-2xl text-xs font-semibold cursor-not-allowed transition">Claim</button>
                 </div>
 
                 <!-- Card Grid -->
                 <div>
-                    <h3 class="font-semibold text-sm mb-3 text-slate-700 flex items-center gap-1.5"><span>🎴</span> คอลเลกชันวัตถุดิบทั้งหมด <span class="text-[11px] font-normal text-slate-400">(แตะเพื่อดูรายละเอียด)</span></h3>
+                    <h3 class="font-semibold text-sm mb-3 text-slate-700 flex items-center gap-1.5"><span>🎴</span> Ingredient Catalog <span class="text-[11px] font-normal text-slate-400">(Tap for details)</span></h3>
                     <div id="album-grid" class="grid grid-cols-2 gap-3"></div>
                 </div>
             </div>
@@ -99,20 +114,33 @@
 
         <!-- ================= STAFF TAB ================= -->
         <section id="tab-staff" class="hidden space-y-4">
-            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-amber-100 space-y-3">
-                <h2 class="font-semibold text-slate-700 flex items-center gap-1.5"><span>⚡</span> โหมดพนักงาน: สุ่มแจกการ์ด</h2>
-                <div>
-                    <label class="block text-xs text-slate-500 mb-1">LINE UID / เบอร์ลูกค้า</label>
-                    <input type="text" id="staff-uid" placeholder="ระบุตัวตนลูกค้า" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+            <div class="bg-white/90 backdrop-blur-sm p-5 rounded-3xl shadow-sm border border-amber-100 space-y-4">
+                <h2 class="font-semibold text-slate-700 flex items-center gap-1.5 text-sm"><span>⚡</span> Staff Portal: Verified Card Draw</h2>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Customer LINE UID / Phone</label>
+                        <input type="text" id="staff-uid" placeholder="Enter customer identifier" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Order ID / Receipt Number</label>
+                        <input type="text" id="staff-order-id" placeholder="e.g. ORD-98234" class="w-full border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 bg-amber-50/30">
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                        <input type="checkbox" id="pay-verified" class="w-4 h-4 text-pink-600 rounded border-slate-300 focus:ring-pink-500">
+                        <label for="pay-verified" class="text-xs font-medium text-slate-600">Payment Confirmed (1 Order = 1 Card Draw Limit)</label>
+                    </div>
                 </div>
-                <button id="btn-staff-draw" class="w-full bg-slate-900 text-white py-3 rounded-2xl text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20">🎲 สุ่มแจกการ์ดให้ลูกค้า</button>
+
+                <button id="btn-staff-draw" class="w-full bg-slate-900 text-white py-3 rounded-2xl text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20">🎲 Draw Random Card</button>
             </div>
 
-            <div id="staff-result" class="hidden bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-md border border-pink-200 text-center space-y-2 animate-pulse">
-                <p class="text-xs text-pink-600 font-bold uppercase tracking-wider">🎉 แจกการ์ดสำเร็จ!</p>
-                <div id="res-icon" class="text-6xl my-2">🍓</div>
+            <div id="staff-result" class="hidden bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-md border border-pink-200 text-center space-y-2">
+                <p class="text-xs text-pink-600 font-bold uppercase tracking-wider">🎉 Card Issued Successfully!</p>
+                <div id="res-icon" class="text-6xl my-2 animate-bounce">🍓</div>
                 <h3 id="res-name" class="font-bold text-lg text-slate-800">-</h3>
-                <p id="res-desc" class="text-xs text-slate-500">-</p>
+                <span id="res-rarity-badge" class="inline-block px-3 py-0.5 rounded-full text-xs font-semibold">Common</span>
+                <p id="res-desc" class="text-xs text-slate-500 mt-1">-</p>
             </div>
         </section>
 
@@ -122,7 +150,7 @@
     <div id="card-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl relative border border-pink-100">
             <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition">✕</button>
-            <div id="modal-icon" class="text-7xl my-2 animate-bounce">🥣</div>
+            <div id="modal-icon" class="text-7xl my-2">🥣</div>
             <h3 id="modal-name" class="font-bold text-lg text-slate-800">-</h3>
             <span id="modal-rarity" class="inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Common</span>
             <p id="modal-desc" class="text-xs text-slate-500 leading-relaxed bg-amber-50/50 p-3 rounded-2xl">-</p>
@@ -130,9 +158,9 @@
     </div>
 
     <script>
-        // ตั้งค่า Supabase ของคุณ
+        // Supabase configuration
         const SUPABASE_URL = 'https://rkqhbszezansedzdhhgf.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWhic3plemFuc2VkemRoaGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDA5MDMsImV4cCI6MjEwOTA3NjkwM30.3ctDY_6idWAbFOVgO2srgQTC-j7SGEwKz1x2QhhKICw';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
         let supabaseClient = null;
         try {
@@ -144,36 +172,36 @@
         }
 
         const CATALOG = [
-            { id: "c1", name: "Greek Original", rarity: "Common", desc: "เนื้อโยเกิร์ตเข้มข้นสูตรต้นตำรับ ละมุนลิ้น ทานเพลิน", icon: "🥣" },
-            { id: "c2", name: "Wild Honey", rarity: "Common", desc: "น้ำผึ้งป่าดอกไม้แท้ 100% เพิ่มความหวานหอมธรรมชาติ", icon: "🍯" },
-            { id: "c3", name: "Granola Crunchy", rarity: "Common", desc: "ธัญพืชคั่วกรอบสูตรลับเฉพาะ เคี้ยวสนุกอิ่มท้อง", icon: "🌾" },
-            { id: "c4", name: "Fresh Strawberry", rarity: "Rare", desc: "สตอเบอร์รี่สดเกรดพรีเมียม ลูกโต รสเปรี้ยวอมหวาน", icon: "🍓" },
-            { id: "c5", name: "Almond Roast", rarity: "Rare", desc: "อัลมอนด์อบสุกหอมกรุ่น เต็มเปี่ยมด้วยคุณประโยชน์", icon: "🥜" },
-            { id: "c6", name: "Special Mascot Gurt", rarity: "Epic", desc: "การ์ดลับสุดพิเศษ หายากระดับตำนานของร้าน Gurt Yogreek!", icon: "🦄" }
+            { id: "c1", name: "Greek Original", rarity: "Common", desc: "Rich and creamy signature original yogurt. Smooth texture and perfectly balanced flavor.", icon: "🥣" },
+            { id: "c2", name: "Wild Honey", rarity: "Common", desc: "100% pure wild flower honey. Adds a natural floral sweetness to every bite.", icon: "🍯" },
+            { id: "c3", name: "Granola Crunchy", rarity: "Common", desc: "House-secret roasted crunchy grains. Fun to chew and keeps you energized.", icon: "🌾" },
+            { id: "c4", name: "Fresh Strawberry", rarity: "Rare", desc: "Premium fresh strawberries. Plump, juicy, with a delightful sweet & tangy taste.", icon: "🍓" },
+            { id: "c5", name: "Almond Roast", rarity: "Rare", desc: "Freshly roasted aromatic almonds packed with premium nutrition and crunch.", icon: "🥜" },
+            { id: "c6", name: "Special Mascot Gurt", rarity: "Epic", desc: "Legendary ultra-rare secret mascot card of Gurt Yogreek! Ultimate collector item.", icon: "🦄" }
         ];
 
         function switchTab(tab) {
             const isC = tab === 'customer';
             document.getElementById('tab-customer').classList.toggle('hidden', !isC);
             document.getElementById('tab-staff').classList.toggle('hidden', isC);
-            document.getElementById('btn-customer').className = isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
-            document.getElementById('btn-staff').className = !isC ? 'px-3 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm' : 'px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
+            document.getElementById('btn-customer').className = isC ? 'px-3.5 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm font-semibold' : 'px-3.5 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
+            document.getElementById('btn-staff').className = !isC ? 'px-3.5 py-1.5 rounded-lg transition bg-white text-pink-600 shadow-sm font-semibold' : 'px-3.5 py-1.5 rounded-lg transition text-slate-600 hover:text-pink-600';
         }
 
         async function loadAlbum() {
             if (!supabaseClient) {
-                alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
+                alert('⚠️ Supabase client is not initialized. Please check your API Key.');
                 return;
             }
             const uid = document.getElementById('cust-uid').value.trim();
-            if(!uid) { alert('กรุณากรอก UID หรือเบอร์โทรศัพท์'); return; }
+            if(!uid) { alert('Please enter your LINE UID or Phone Number.'); return; }
 
             try {
                 let { data, error } = await supabaseClient.from('members').select('*').eq('line_uid', uid).maybeSingle();
                 
                 if (error) {
                     console.error("Supabase Select Error:", error);
-                    alert('❌ เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message);
+                    alert('❌ Error retrieving data: ' + error.message);
                     return;
                 }
 
@@ -183,7 +211,7 @@
                     let { error: insertError } = await supabaseClient.from('members').insert([{ line_uid: uid, cards: [] }]);
                     if (insertError) {
                         console.error("Supabase Insert Error:", insertError);
-                        alert('❌ เกิดข้อผิดพลาดในการสร้างบัญชี: ' + insertError.message);
+                        alert('❌ Error creating member account: ' + insertError.message);
                         return;
                     }
                 }
@@ -194,7 +222,7 @@
 
             } catch (err) {
                 console.error("Unexpected Error:", err);
-                alert('❌ เกิดข้อผิดพลาดที่ไม่คาดคิด: ' + err.message);
+                alert('❌ Unexpected error occurred: ' + err.message);
             }
         }
 
@@ -207,25 +235,31 @@
                 const owned = userCards.includes(card.id);
                 if(owned) count++;
 
-                let glowClass = '';
-                if(owned && card.rarity === 'Epic') glowClass = 'card-glow-epic bg-purple-50/60 border-purple-200';
-                else if(owned && card.rarity === 'Rare') glowClass = 'card-glow-rare bg-blue-50/60 border-blue-200';
-                else if(owned) glowClass = 'bg-white border-pink-200 shadow-sm';
-                else glowClass = 'bg-slate-50/60 border-slate-200 opacity-40 grayscale';
+                let tierClass = 'card-common';
+                let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
+                if(owned && card.rarity === 'Epic') {
+                    tierClass = 'card-epic';
+                    badgeStyle = 'bg-purple-100 text-purple-700 border-purple-300';
+                } else if(owned && card.rarity === 'Rare') {
+                    tierClass = 'card-rare';
+                    badgeStyle = 'bg-cyan-100 text-cyan-700 border-cyan-300';
+                } else if(!owned) {
+                    tierClass = 'bg-slate-50/60 border-slate-200 opacity-40 grayscale';
+                }
 
                 const el = document.createElement('div');
-                el.className = `p-3.5 rounded-3xl border transition card-hover cursor-pointer flex flex-col justify-between ${glowClass}`;
+                el.className = `p-3.5 rounded-3xl border transition card-hover cursor-pointer flex flex-col justify-between ${tierClass}`;
                 el.addEventListener('click', () => openModal(card, owned));
                 el.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <span class="text-3xl">${card.icon}</span>
-                            <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-semibold bg-white/60">${card.rarity}</span>
+                            <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-bold ${badgeStyle}">${card.rarity}</span>
                         </div>
                         <h4 class="font-bold text-xs text-slate-800">${card.name}</h4>
                     </div>
                     <div class="mt-3 pt-2 border-t border-slate-100/80 text-[10px] font-medium flex items-center justify-between">
-                        <span class="${owned ? 'text-pink-600 font-semibold' : 'text-slate-400'}">${owned ? '✓ สะสมแล้ว' : '🔒 ล็อกอยู่'}</span>
+                        <span class="${owned ? 'text-pink-600 font-semibold' : 'text-slate-400'}">${owned ? '✓ Collected' : '🔒 Locked'}</span>
                     </div>
                 `;
                 grid.appendChild(el);
@@ -246,8 +280,10 @@
         function openModal(card, owned) {
             document.getElementById('modal-icon').innerText = card.icon;
             document.getElementById('modal-name').innerText = card.name;
-            document.getElementById('modal-desc').innerText = owned ? card.desc : '🔒 คุณยังไม่ได้รับสติกเกอร์/การ์ดใบนี้ สั่งซื้อเมนูพิเศษหน้าร้านเพื่อสุ่มรับเลย!';
-            document.getElementById('modal-rarity').innerText = card.rarity;
+            document.getElementById('modal-desc').innerText = owned ? card.desc : '🔒 You haven’t collected this card yet. Purchase special store menus to draw it!';
+            const rarityEl = document.getElementById('modal-rarity');
+            rarityEl.innerText = card.rarity;
+            rarityEl.className = `inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${card.rarity === 'Epic' ? 'bg-purple-100 text-purple-700' : card.rarity === 'Rare' ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-700'}`;
             document.getElementById('card-modal').classList.remove('hidden');
         }
 
@@ -257,11 +293,16 @@
 
         async function staffDrawCard() {
             if (!supabaseClient) {
-                alert('⚠️ ระบบ Supabase ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ API Key');
+                alert('⚠️ Supabase client is not initialized.');
                 return;
             }
             const uid = document.getElementById('staff-uid').value.trim();
-            if(!uid) { alert('กรุณากรอก UID ลูกค้า'); return; }
+            const orderId = document.getElementById('staff-order-id').value.trim();
+            const isVerified = document.getElementById('pay-verified').checked;
+
+            if(!uid) { alert('Please enter customer UID or phone number.'); return; }
+            if(!orderId) { alert('Please enter an Order ID / Receipt Number.'); return; }
+            if(!isVerified) { alert('Please confirm payment verification before drawing a card (Limit 1 card per paid order).'); return; }
 
             const rand = Math.random() * 100;
             let rarity = 'Common';
@@ -281,14 +322,19 @@
             document.getElementById('res-icon').innerText = card.icon;
             document.getElementById('res-name').innerText = card.name;
             document.getElementById('res-desc').innerText = card.desc;
-            alert(`แจกการ์ด "${card.name}" (${card.rarity}) สำเร็จ!`);
+            
+            const badge = document.getElementById('res-rarity-badge');
+            badge.innerText = card.rarity;
+            badge.className = `inline-block px-3 py-0.5 rounded-full text-xs font-semibold ${card.rarity === 'Epic' ? 'bg-purple-100 text-purple-700' : card.rarity === 'Rare' ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-700'}`;
+            
+            alert(`Successfully issued "${card.name}" (${card.rarity}) for Order #${orderId}!`);
         }
 
         function claimReward() {
-            alert('ยินดีด้วยครับ! แสดงหน้าจอนี้ให้พนักงานหน้าร้านเพื่อรับกรีกโยเกิร์ตฟรี 1 ถ้วยได้เลยครับ');
+            alert('Congratulations! Show this screen to our store staff to redeem your free Greek Yogurt cup.');
         }
 
-        // ผูก Event Listener เมื่อโหลดหน้าเว็บเสร็จ
+        // Event listeners initialization
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btn-customer').addEventListener('click', () => switchTab('customer'));
             document.getElementById('btn-staff').addEventListener('click', () => switchTab('staff'));
